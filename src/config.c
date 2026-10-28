@@ -120,6 +120,8 @@ Config *initialize_config(void)
         parse_greeter_color_key(keyfile, "border-color", "#080800");
     config->border_width = parse_greeter_string(
         keyfile, "greeter-theme", "border-width", "2px");
+    config->border_radius = parse_greeter_string(
+        keyfile, "greeter-theme", "border-radius", "0em");
     // Password
     config->password_char =
         parse_greeter_password_char(keyfile);

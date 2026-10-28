@@ -169,6 +169,17 @@ static void setup_main_window(Config *config, UI *ui)
 
     gtk_container_set_border_width(GTK_CONTAINER(main_window), config->layout_spacing);
     gtk_widget_set_name(GTK_WIDGET(main_window), "main");
+    GdkScreen *screen = gtk_widget_get_screen(GTK_WIDGET(main_window));
+    GdkVisual *colormap = gdk_screen_get_rgba_visual(screen);
+
+    if (!colormap)
+    {
+        g_warning("Your screen does not support alpha channels!");
+    }
+    else
+    {
+        gtk_widget_set_visual(GTK_WIDGET(main_window), colormap);
+    }
 
     g_signal_connect(main_window, "show", G_CALLBACK(place_main_window), NULL);
     g_signal_connect(main_window, "realize", G_CALLBACK(hide_mouse_cursor), NULL);
@@ -353,6 +364,7 @@ static void attach_config_colors_to_screen(Config *config)
             "border-width: %s;\n"
             "border-color: %s;\n"
             "border-style: solid;\n"
+            "border-radius: %s;\n"
         "}\n"
         "#main {\n"
             "background-color: %s;\n"
@@ -395,6 +407,7 @@ static void attach_config_colors_to_screen(Config *config)
         // #main, #password
         , config->border_width
         , gdk_rgba_to_string(config->border_color)
+        , config->password_border_radius
         // #main
         , gdk_rgba_to_string(config->window_color)
         // #password

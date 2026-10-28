@@ -29,6 +29,7 @@ Right now you can:
 * set the password masking character
 * set the size of the login window, the font, & every color
 * set & scale a background image
+* set the radius of the corners of the login window
 * use modifiable hotkeys to cycle through sessions or trigger a shutdown,
   restart, hibernate, or suspend
 
