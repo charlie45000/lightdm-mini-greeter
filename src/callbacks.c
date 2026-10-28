@@ -23,6 +23,8 @@ static void set_ui_feedback_label(App *app, gchar *feedback_text);
  */
 void authentication_complete_cb(LightDMGreeter *greeter, App *app)
 {
+    GtkStyleContext *style_context =
+        gtk_widget_get_style_context(GTK_WIDGET(APP_PASSWORD_INPUT(app)));
     if (lightdm_greeter_get_is_authenticated(greeter)) {
         const gchar *session = focus_ring_get_value(app->session_ring);
 
@@ -34,10 +36,17 @@ void authentication_complete_cb(LightDMGreeter *greeter, App *app)
         if (!session_started_successfully) {
             g_message("Unable to start session");
         }
+        // TODO: make this work even if the entry is foccused
+        gtk_entry_set_placeholder_text(GTK_ENTRY(APP_PASSWORD_INPUT(app)), app->config->password_label_text);
+        gtk_style_context_remove_class(style_context, "error");
     } else {
         g_message("Authentication failed");
-        if (strlen(app->config->invalid_password_text) > 0) {
+        if (strlen(app->config->invalid_password_text) > 0 && app->config->show_invalid_label) {
             set_ui_feedback_label(app, app->config->invalid_password_text);
+        } else {
+            gtk_style_context_add_class(style_context, "error");
+            // TODO: make this work even if the entry is foccused
+            gtk_entry_set_placeholder_text(GTK_ENTRY(APP_PASSWORD_INPUT(app)), app->config->invalid_password_text);
         }
         begin_authentication_as_default_user(app);
     }

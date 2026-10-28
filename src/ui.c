@@ -24,7 +24,7 @@ static void place_main_window(GtkWidget *main_window, gpointer user_data);
 static void create_and_attach_layout_container(UI *ui);
 static void create_and_attach_sys_info_label(Config *config, UI *ui);
 static void create_and_attach_password_field(Config *config, UI *ui);
-static void create_and_attach_feedback_label(UI *ui);
+static void create_and_attach_feedback_label(Config *config, UI *ui);
 static void attach_config_colors_to_screen(Config *config);
 
 
@@ -39,7 +39,7 @@ UI *initialize_ui(Config *config)
     create_and_attach_layout_container(ui);
     create_and_attach_sys_info_label(config, ui);
     create_and_attach_password_field(config, ui);
-    create_and_attach_feedback_label(ui);
+    create_and_attach_feedback_label(config, ui);
     attach_config_colors_to_screen(config);
 
     return ui;
@@ -299,30 +299,35 @@ static void create_and_attach_password_field(Config *config, UI *ui)
         gtk_label_set_justify(GTK_LABEL(ui->password_label), GTK_JUSTIFY_RIGHT);
         gtk_grid_attach_next_to(ui->layout_container, ui->password_label,
                                 ui->password_input, GTK_POS_LEFT, 1, 1);
+    } else {
+        // TODO: make this work even if the entry is foccused
+        gtk_entry_set_placeholder_text(GTK_ENTRY(ui->password_input), config->password_label_text);
     }
 }
 
 
 /* Add a label for feedback to the user */
-static void create_and_attach_feedback_label(UI *ui)
+static void create_and_attach_feedback_label(Config *config, UI *ui)
 {
-    ui->feedback_label = gtk_label_new("");
-    gtk_label_set_justify(GTK_LABEL(ui->feedback_label), GTK_JUSTIFY_CENTER);
-    gtk_widget_set_no_show_all(ui->feedback_label, TRUE);
-    gtk_widget_set_name(GTK_WIDGET(ui->feedback_label), "error");
+    if (config->show_invalid_label) {
+        ui->feedback_label = gtk_label_new("");
+        gtk_label_set_justify(GTK_LABEL(ui->feedback_label), GTK_JUSTIFY_CENTER);
+        gtk_widget_set_no_show_all(ui->feedback_label, TRUE);
+        gtk_widget_set_name(GTK_WIDGET(ui->feedback_label), "error");
 
-    GtkWidget *attachment_point;
-    gint width;
-    if (ui->password_label == NULL) {
-        attachment_point = ui->password_input;
-        width = 1;
-    } else {
-        attachment_point = ui->password_label;
-        width = 2;
+        GtkWidget *attachment_point;
+        gint width;
+        if (ui->password_label == NULL) {
+            attachment_point = ui->password_input;
+            width = 1;
+        } else {
+            attachment_point = ui->password_label;
+            width = 2;
+        }
+
+        gtk_grid_attach_next_to(ui->layout_container, ui->feedback_label,
+                                attachment_point, GTK_POS_BOTTOM, width, 1);
     }
-
-    gtk_grid_attach_next_to(ui->layout_container, ui->feedback_label,
-                            attachment_point, GTK_POS_BOTTOM, width, 1);
 }
 
 /* Attach a style provider to the screen, using color options from config */
@@ -350,6 +355,9 @@ static void attach_config_colors_to_screen(Config *config)
         "}\n"
         "label#error {\n"
             "color: %s;\n"
+        "}\n"
+        "#password.error {\n"
+            "border-color: %s;\n"
         "}\n"
         "#background {\n"
             "background-color: %s;\n"
@@ -397,6 +405,8 @@ static void attach_config_colors_to_screen(Config *config)
         // label
         , gdk_rgba_to_string(config->text_color)
         // label#error
+        , gdk_rgba_to_string(config->error_color)
+        // #password.error
         , gdk_rgba_to_string(config->error_color)
         // #background
         , gdk_rgba_to_string(config->background_color)

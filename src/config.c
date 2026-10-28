@@ -54,6 +54,8 @@ Config *initialize_config(void)
         parse_greeter_boolean(keyfile, "greeter", "show-password-label", TRUE);
     config->password_label_text = parse_greeter_string(
         keyfile, "greeter", "password-label-text", "Password:");
+    config->show_invalid_label =
+        parse_greeter_boolean(keyfile, "greeter", "show-invalid-label", TRUE);
     config->invalid_password_text = parse_greeter_string(
         keyfile, "greeter", "invalid-password-text", "Invalid Password");
     config->show_input_cursor =
